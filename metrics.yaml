@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: metrics
+  name: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: metrics
+    spec:
+      containers:
+      - image: sandhose/ndli-metrics:latest
+        name: metrics
+        env:
+        - name: REDIS_HOST
+          value: ndli-redis-master
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ndli-redis
+              key: redis-password
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metrics
+  name: metrics
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: metrics
+  type: ClusterIP
+
+---

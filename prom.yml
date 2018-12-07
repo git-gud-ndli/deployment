@@ -1,0 +1,7 @@
+rbac:
+  create: false
+
+extraScrapeConfigs: |
+  - job_name: 'api'
+    static_configs:
+    - targets: ['metrics']

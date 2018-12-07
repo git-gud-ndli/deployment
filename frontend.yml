@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - image: sandhose/ndli-front:latest
+        name: front
+        env:
+        - name: GRAPHQL_ENDPOINT
+          value: https://ndli-api.sandhose.fr/
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: frontend
+  type: ClusterIP
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: frontend
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+  labels:
+    app: frontend
+spec:
+  tls:
+  - secretName: sandhose-fr-tls
+  rules:
+  - host: survivor.sandhose.fr
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
